@@ -2,7 +2,7 @@
   "development": {
     "username": "root",
     "password": "Password1!",
-    "database": "auth",
+    "database": "family_favs",
     "host": "127.0.0.1",
     "dialect": "mysql",
     "define": { "timestamps" : false }
