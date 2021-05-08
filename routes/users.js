@@ -3,6 +3,7 @@ var router = express.Router();
 const mysql = require('mysql2');
 var models = require('../models');
 const authService = require("../services/auth");
+var passport = require('../services/passport');
 
 
 /* GET users listing. */
@@ -29,38 +30,14 @@ router.post('/signup', function (req, res, next) {
     })
     .spread(function (result, created) {
       if (created) {
-        res.send('User Successfully Created!');
+        res.redirect('login');
       } else {
         res.send('This user already exists');
       }
     });
 });
 
-// Loin user and return JWT as cookie
-router.post('/login', function (req, res, next) {
-  models.users.findOne({
-    where: {
-      Username: req.body.username,
-      Password: req.body.password
-    }
-  }).then(user => {
-    if (!user) {
-      console.log('User not found')
-      return res.status(401).json({
-        message: "Login Failed"
-      });
-    }
-    if (user) {
-      let token = authService.signUser(user);
-      res.cookie('jwt', token);
-      res.send('Login successful');
-    } else {
-      console.log('Wrong password');
-      res.redirect('login')
-    }
-  });
-});
-
+// PROFILE PAGE & CREATING POST
 router.get('/profile', function (req, res, next) {
   let token = req.cookies.jwt;
   if (token) {
@@ -79,11 +56,40 @@ router.get('/profile', function (req, res, next) {
   }
 });
 
-router.get('/logout', function (req, res) {
-  router.get('/logout', function (req, res, next) {
-    res.cookie('jwt', "", { expires: new Date(0) });
-    res.send('Logged out');
+
+/* POST login page. */
+router.get('/login', function (req, res, next) {
+  res.render('login');
+});
+
+router.post('/login', function (req, res, next) {
+  models.users.findOne({
+    where: {
+      Username: req.body.username
+    }
+  }).then(user => {
+    if (!user) {
+      console.log('User not found')
+      return res.status(401).json({
+        message: "Login Failed"
+      });
+    } else {
+      let passwordMatch = authService.comparePasswords(req.body.password, user.Password);
+      if (passwordMatch) {
+        let token = authService.signUser(user);
+        res.cookie('jwt', token);
+        res.send('Login successful');
+      } else {
+        console.log('Wrong password');
+        res.send('Wrong password');
+      }
+    }
   });
+});
+
+router.get('/logout', function (req, res, next) {
+  res.cookie('jwt', "", { expires: new Date(0) });
+  res.send('Logged out');
 });
 
 module.exports = router;
