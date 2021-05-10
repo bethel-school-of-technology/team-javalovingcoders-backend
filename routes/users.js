@@ -2,6 +2,8 @@ var express = require('express');
 var router = express.Router();
 const mysql = require('mysql2');
 var models = require('../models');
+const authService = require("../services/auth");
+var passport = require('../services/passport');
 
 
 /* GET users listing. */
@@ -9,7 +11,7 @@ router.get('/', function (req, res, next) {
   res.send('respond with a resource');
 });
 
-/* GET signup page. */
+// Create a new user if one doesn't exist
 router.get('/signup', function (req, res, next) {
   res.render('signup');
 });
@@ -23,7 +25,7 @@ router.post('/signup', function (req, res, next) {
       defaults: {
         FullName: req.body.fullName,
         Email: req.body.email,
-        Password: req.body.password
+        Password: authService.hashPassword(req.body.password)
       }
     })
     .spread(function (result, created) {
@@ -35,22 +37,25 @@ router.post('/signup', function (req, res, next) {
     });
 });
 
-/* GET profile page. */
-router.get('/profile/:id', function (req, res, next) {
-  models.users
-    .findByPk(parseInt(req.params.id))
-    .then(user => {
-      if (user) {
-        res.render('profile', {
-          FullName: user.FullName,
-          Email: user.Email,
-          Username: user.Username
-        });
-      } else {
-        res.send('User not found');
-      }
-    });
+// PROFILE PAGE & CREATING POST
+router.get('/profile', function (req, res, next) {
+  let token = req.cookies.jwt;
+  if (token) {
+    authService.verifyUser(token)
+      .then(user => {
+        if (user) {
+          res.send(JSON.stringify(user));
+        } else {
+          res.status(401);
+          res.send('Invalid authentication token');
+        }
+      });
+  } else {
+    res.status(401);
+    res.send('Must be logged in');
+  }
 });
+
 
 /* POST login page. */
 router.get('/login', function (req, res, next) {
@@ -58,20 +63,33 @@ router.get('/login', function (req, res, next) {
 });
 
 router.post('/login', function (req, res, next) {
-  models.users
-    .findOne({
-      where: {
-        Username: req.body.username,
-        Password: req.body.password
-      }
-    })
-    .then(user => {
-      if (user) {
-        res.redirect('profile/' + user.UserId);
+  models.users.findOne({
+    where: {
+      Username: req.body.username
+    }
+  }).then(user => {
+    if (!user) {
+      console.log('User not found')
+      return res.status(401).json({
+        message: "Login Failed"
+      });
+    } else {
+      let passwordMatch = authService.comparePasswords(req.body.password, user.Password);
+      if (passwordMatch) {
+        let token = authService.signUser(user);
+        res.cookie('jwt', token);
+        res.send('Login successful');
       } else {
-        res.send('Invalid login!');
+        console.log('Wrong password');
+        res.send('Wrong password');
       }
-    });
+    }
+  });
+});
+
+router.get('/logout', function (req, res, next) {
+  res.cookie('jwt', "", { expires: new Date(0) });
+  res.send('Logged out');
 });
 
 module.exports = router;
