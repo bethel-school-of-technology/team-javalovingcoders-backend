@@ -3,18 +3,7 @@ var router = express.Router();
 const mysql = require('mysql2');
 var models = require('../models');
 const authService = require("../services/auth");
-var passport = require('../services/passport');
 
-
-/* GET users listing. */
-router.get('/', function (req, res, next) {
-  res.send('respond with a resource');
-});
-
-// Create a new user if one doesn't exist
-router.get('/signup', function (req, res, next) {
-  res.render('signup');
-});
 
 router.post('/signup', function (req, res, next) {
   models.users
@@ -30,7 +19,10 @@ router.post('/signup', function (req, res, next) {
     })
     .spread(function (result, created) {
       if (created) {
-        res.redirect('login');
+        res.json({
+          message: 'User successfully created!',
+          status: 200
+        });
       } else {
         res.send('This user already exists');
       }
@@ -57,10 +49,6 @@ router.get('/profile', function (req, res, next) {
 });
 
 
-/* POST login page. */
-router.get('/login', function (req, res, next) {
-  res.render('login');
-});
 
 router.post('/login', function (req, res, next) {
   models.users.findOne({
@@ -78,7 +66,10 @@ router.post('/login', function (req, res, next) {
       if (passwordMatch) {
         let token = authService.signUser(user);
         res.cookie('jwt', token);
-        res.send('Login successful');
+        res.json({
+          message: 'User successfully logged in!',
+          status: 200
+        });
       } else {
         console.log('Wrong password');
         res.send('Wrong password');
@@ -89,7 +80,10 @@ router.post('/login', function (req, res, next) {
 
 router.get('/logout', function (req, res, next) {
   res.cookie('jwt', "", { expires: new Date(0) });
-  res.send('Logged out');
+  res.json({
+    message: 'User successfully logged out!',
+    status: 200
+  });
 });
 
 module.exports = router;
