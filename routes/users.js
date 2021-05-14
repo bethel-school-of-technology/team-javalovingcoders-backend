@@ -4,7 +4,7 @@ const mysql = require('mysql2');
 var models = require('../models');
 const authService = require("../services/auth");
 
-
+// Register
 router.post('/signup', function (req, res, next) {
   models.users
     .findOrCreate({
@@ -24,32 +24,53 @@ router.post('/signup', function (req, res, next) {
           status: 200
         });
       } else {
-        res.send('This user already exists');
+        res.json({
+          message: "that user already exists",
+          status: 403,
+        });
       }
     });
 });
 
-// PROFILE PAGE & CREATING POST
+// PROFILE PAGE
 router.get('/profile', function (req, res, next) {
-  let token = req.cookies.jwt;
-  if (token) {
-    authService.verifyUser(token)
-      .then(user => {
-        if (user) {
-          res.send(JSON.stringify(user));
-        } else {
-          res.status(401);
-          res.send('Invalid authentication token');
-        }
-      });
+  let myToken = req.headers.authorization;
+  console.log(myToken);
+
+  if (myToken) {
+    let currentUser = authService.verifyUser(myToken);
+    console.log(currentUser);
+
+    if (currentUser) {
+      let responseUser = {
+        fullName: currentUser.fullName,
+        email: currentUser.email,
+        username: currentUser.username
+      }
+      res.json({
+        message: "User Profile loaded successfully!",
+        status: 200,
+        user: responseUser
+      })
+    } else {
+      res.json({
+        message: "Token was invalid or expired!",
+        status: 403
+      })
+
+    }
   } else {
-    res.status(401);
-    res.send('Must be logged in');
+    res.json({
+      message: "No token received!",
+      status: 403
+    })
   }
+
 });
 
 
 
+// Login Route
 router.post('/login', function (req, res, next) {
   models.users.findOne({
     where: {
@@ -65,10 +86,10 @@ router.post('/login', function (req, res, next) {
       let passwordMatch = authService.comparePasswords(req.body.password, user.Password);
       if (passwordMatch) {
         let token = authService.signUser(user);
-        res.cookie('jwt', token);
         res.json({
           message: 'User successfully logged in!',
-          status: 200
+          status: 200,
+          token
         });
       } else {
         console.log('Wrong password');
@@ -78,6 +99,8 @@ router.post('/login', function (req, res, next) {
   });
 });
 
+
+// Logout Route
 router.get('/logout', function (req, res, next) {
   res.cookie('jwt', "", { expires: new Date(0) });
   res.json({
