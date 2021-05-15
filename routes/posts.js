@@ -5,20 +5,21 @@ const authService = require("../services/auth");
 
 
 // Create a Post
-router.post('/createPost', function (res, req, next) {
+router.post('/createPost', async function (req, res, next) {
     let token = req.headers.authorization;
     console.log(token);
 
     if (token) {
-        let currentPost = authService.verifyUser(token);
-        console.log(currentPost);
+        let currentUser = await authService.verifyUser(token);
+        console.log(currentUser);
 
-        if (currentPost) {
+        if (currentUser) {
             models.posts.findOrCreate({
-                where: { PostTitle: req.body.PostTitle },
-                default: {
-                    postBody: req.body.postBody,
-                    category: req.body.category
+                where: { PostTitle: req.body.postTitle },
+                defaults: {
+                    PostBody: req.body.postBody,
+                    Category: req.body.category,
+                    UserId: currentUser.UserId
                 }
             }).spread(function (result, created) {
                 if (created) {
