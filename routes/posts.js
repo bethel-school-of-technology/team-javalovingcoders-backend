@@ -5,6 +5,7 @@ const authService = require("../services/auth");
 
 
 // Create a Post
+// http://localhost:3001/posts/createPost
 router.post('/createPost', async function (req, res, next) {
     let token = req.headers.authorization;
     console.log(token);
@@ -47,8 +48,16 @@ router.post('/createPost', async function (req, res, next) {
 
 
 // Page for All Posts
-router.get('/', function (res, req, next) {
-
+// http://localhost:3001/posts
+router.get('/', function (req, res, next) {
+    models.posts
+        .findAll({ include: [{ model: models.users }] })
+        .then(postsFound => {
+            res.json({
+                message: postsFound,
+                status: 200
+            });
+        })
 });
 
 module.exports = router;

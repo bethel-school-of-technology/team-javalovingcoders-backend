@@ -5,6 +5,7 @@ var models = require('../models');
 const authService = require("../services/auth");
 
 // Register
+// http://localhost:3001/users/signup
 router.post('/signup', function (req, res, next) {
   models.users
     .findOrCreate({
@@ -33,6 +34,7 @@ router.post('/signup', function (req, res, next) {
 });
 
 // PROFILE PAGE
+// http://localhost:3001/users/profile
 router.get('/profile', function (req, res, next) {
   let myToken = req.headers.authorization;
   console.log(myToken);
@@ -71,6 +73,7 @@ router.get('/profile', function (req, res, next) {
 
 
 // Login Route
+// http://localhost:3001/users/login
 router.post('/login', function (req, res, next) {
   models.users.findOne({
     where: {
@@ -101,6 +104,7 @@ router.post('/login', function (req, res, next) {
 
 
 // Logout Route
+// http://localhost:3001/users/logout
 router.get('/logout', function (req, res, next) {
   res.cookie('jwt', "", { expires: new Date(0) });
   res.json({
