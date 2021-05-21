@@ -1,57 +1,34 @@
 var express = require('express');
 var router = express.Router();
-var models = require('../models');
+var { posts } = require('../models/');
 const authService = require("../services/auth");
 
 
-// Create a Post
+// CREATE a Post // POST Method
 // http://localhost:3001/posts/createPost
 router.post('/createPost', async function (req, res, next) {
-    let token = req.headers.authorization;
-    console.log(token);
 
-    if (token) {
-        let currentUser = await authService.verifyUser(token);
-        console.log(currentUser);
+    const user = req.user;
 
-        if (currentUser) {
-            models.posts.findOrCreate({
-                where: { PostTitle: req.body.postTitle },
-                defaults: {
-                    PostBody: req.body.postBody,
-                    Category: req.body.category,
-                    UserId: currentUser.UserId
-                }
-            }).spread(function (result, created) {
-                if (created) {
-                    res.json({
-                        message: 'Post successfully created!',
-                        status: 200
-                    });
-                } else {
-                    res.json({ status: 403 });
-                }
-            });
-        } else {
-            res.json({
-                message: 'Invalid User Authenitcation!',
-                status: 403
-            })
-        }
-    } else {
-        res.json({
-            message: 'Must be logged in for that!',
-            status: 401
-        })
+    if (!user) {
+        res.status(403).send();
+        return;
     }
+
+    posts.create({
+        PostTitle: req.body.postTitle,
+        PostBody: req.body.postBody,
+        Category: req.body.category,
+        UserId: user.UserId
+    }).then(newPost => { res.json(newPost); })
+        .catch(() => { escape.status(400).send(); })
 });
 
 
-// Page for All Posts
+// GET All Posts // GET Method
 // http://localhost:3001/posts
 router.get('/', function (req, res, next) {
-    models.posts
-        .findAll({ include: [{ model: models.users }] })
+    posts.findAll({ include: [{ model: models.users }] })
         .then(postsFound => {
             res.json({
                 message: postsFound,
@@ -59,5 +36,67 @@ router.get('/', function (req, res, next) {
             });
         })
 });
+
+
+// GET A Single POST // GET Method
+// http://localhost:3001/posts/:id
+router.get('/:PostTitle', (req, res, next) => {
+    const testId = (req.body.PostTitle)
+
+    posts.findOne({
+        where: { PostId: testId }
+    })
+        .then(thePost => {
+            if (thePost) { res.json(thePost); }
+            else { res.status(404).send(); }
+        }), err => {
+            escape.status(500).send(err)
+        }
+});
+
+
+// UPDATE a post // PUT Method
+// http://localhost:3001/posts/:id
+router.put('/:id', async function (req, res, next) {
+    const testId = parseInt(req.body.PostId);
+
+    if (!testId || testId <= 0) {
+        res.status(400).send('Invalid ID');
+        return
+    }
+
+    const user = req.user;
+
+    if (!user) {
+        res.status(403).send();
+        return;
+    }
+
+    posts.update({
+        PostTitle: req.body.postTitle,
+        PostBody: req.body.postBody,
+        Category: req.body.category
+    })
+});
+
+
+
+// DELETE A Post // DELETE Method
+// http://localhost:3001/posts/:id
+router.delete('/delete', async function (req, res, next) {
+
+    const user = req.user;
+
+    if (!user) {
+        res.status(403).send();
+        return;
+    }
+
+    posts.destroy({ where: { PostId: req.body.PostId } })
+        .then(() => { res.status(204).send(); })
+        .catch(() => { res.status(400).send() });
+});
+
+
 
 module.exports = router;

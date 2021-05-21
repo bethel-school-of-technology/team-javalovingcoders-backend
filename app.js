@@ -11,6 +11,7 @@ var cors = require('cors');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var postsRouter = require('./routes/posts');
+const authService = require('./services/auth');
 
 var app = express();
 
@@ -28,6 +29,23 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({ secret: 'perilous journey' }));
 app.use(passport.initialize());
 app.use(passport.session());
+
+app.use(async (req, res, next) => {
+  // get token from the request
+  const header = req.headers.authorization;
+
+  if (!header) {
+    return next();
+  }
+
+  const token = header.split(' ')[1];
+
+  // validate token / get the user
+  const user = await authService.verifyUser(token);
+  req.user = user;
+  next();
+
+});
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
@@ -52,5 +70,6 @@ app.use(function (err, req, res, next) {
 models.sequelize.sync().then(function () {
   console.log("DB has Sync'd up")
 });
+
 
 module.exports = app;

@@ -1,23 +1,22 @@
 var express = require('express');
 var router = express.Router();
 const mysql = require('mysql2');
-var models = require('../models');
+var { users } = require('../models/');
 const authService = require("../services/auth");
 
 // Register
 // http://localhost:3001/users/signup
 router.post('/signup', function (req, res, next) {
-  models.users
-    .findOrCreate({
-      where: {
-        Username: req.body.username
-      },
-      defaults: {
-        FullName: req.body.fullName,
-        Email: req.body.email,
-        Password: authService.hashPassword(req.body.password)
-      }
-    })
+  users.findOrCreate({
+    where: {
+      Username: req.body.username
+    },
+    defaults: {
+      FullName: req.body.fullName,
+      Email: req.body.email,
+      Password: authService.hashPassword(req.body.password)
+    }
+  })
     .spread(function (result, created) {
       if (created) {
         res.json({
@@ -32,6 +31,7 @@ router.post('/signup', function (req, res, next) {
       }
     });
 });
+
 
 // PROFILE PAGE
 // http://localhost:3001/users/profile
@@ -71,11 +71,10 @@ router.get('/profile', function (req, res, next) {
 });
 
 
-
 // Login Route
 // http://localhost:3001/users/login
 router.post('/login', function (req, res, next) {
-  models.users.findOne({
+  users.findOne({
     where: {
       Username: req.body.username
     }
@@ -95,8 +94,10 @@ router.post('/login', function (req, res, next) {
           token
         });
       } else {
-        console.log('Wrong password');
-        res.send('Wrong password');
+        res.json({
+          message: 'Incorrect Password!',
+          status: 401
+        })
       }
     }
   });
