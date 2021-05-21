@@ -23,7 +23,7 @@ router.post('/createPost', async function (req, res, next) {
         Category: req.body.category,
         UserId: user.UserId
     }).then(newPost => { res.json(newPost); })
-        .catch(() => { escape.status(400).send(); })
+        .catch(() => { res.status(400).send(); })
 });
 
 
@@ -52,14 +52,14 @@ router.get('/:PostTitle', (req, res, next) => {
             if (thePost) { res.json(thePost); }
             else { res.status(404).send(); }
         }), err => {
-            escape.status(500).send(err)
+            res.status(500).send(err)
         }
 });
 
 
 // UPDATE a post // PUT Method
 // http://localhost:3001/posts/:id
-router.put('/:id', async function (req, res, next) {
+router.put('/update', async function (req, res, next) {
     const testId = parseInt(req.body.PostId);
 
     if (!testId || testId <= 0) {
@@ -78,7 +78,8 @@ router.put('/:id', async function (req, res, next) {
         PostTitle: req.body.postTitle,
         PostBody: req.body.postBody,
         Category: req.body.category
-    })
+    }).then(updatedPost => { res.json(updatedPost); })
+    .catch(() => { res.status(400).send(); })
 });
 
 
