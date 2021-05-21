@@ -39,10 +39,11 @@ app.use(async (req, res, next) => {
     return next();
   }
 
-  const token = header.split(' ')[1];
+  // only use this for a bearer token! 
+  //const token = header.split(' ')[1];
 
   // validate token / get the user
-  const user = await authService.verifyUser(token);
+  const user = await authService.verifyUser(header);
   req.user = user;
   next();
 
