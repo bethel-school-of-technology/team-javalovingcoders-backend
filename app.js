@@ -30,6 +30,7 @@ app.use(session({ secret: 'perilous journey' }));
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Authenticating a User! / I know who you are now! :)
 app.use(async (req, res, next) => {
   // get token from the request
   const header = req.headers.authorization;
@@ -46,6 +47,8 @@ app.use(async (req, res, next) => {
   next();
 
 });
+
+// Authorizing a User! / You have been idenified but you do not have permission to do that! :(
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
