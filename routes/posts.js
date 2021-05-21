@@ -1,6 +1,8 @@
 var express = require('express');
 var router = express.Router();
-var { posts } = require('../models/');
+const { posts } = require('../models/');
+const { users } = require('../models/');
+var models = require('../models')
 const authService = require("../services/auth");
 
 
@@ -28,7 +30,7 @@ router.post('/createPost', async function (req, res, next) {
 // GET All Posts // GET Method
 // http://localhost:3001/posts
 router.get('/', function (req, res, next) {
-    posts.findAll({ include: [{ model: models.users }] })
+    posts.findAll({ include: [{ model: users }] })
         .then(postsFound => {
             res.json({
                 message: postsFound,
