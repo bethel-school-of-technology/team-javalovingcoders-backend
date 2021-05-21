@@ -36,26 +36,23 @@ router.post('/signup', function (req, res, next) {
 // PROFILE PAGE
 // http://localhost:3001/users/profile
 router.get('/profile', function (req, res, next) {
+  let myToken = req.headers.authorization;
+  console.log(myToken);
 
-  const user = req.user;
+  if (myToken) {
+    let currentUser = authService.verifyUser(myToken);
+    console.log(currentUser);
 
-  if (!user) {
-    res.status(403).send();
-    return;
-  }
-
-  if (user) {
-
-    if (user) {
+    if (currentUser) {
       let responseUser = {
-        fullName: users.fullName,
-        email: users.email,
-        username: users.username
+        FullName: currentUser.FullName,
+        Email: currentUser.Email,
+        Username: currentUser.Username
       }
       res.json({
         message: "User Profile loaded successfully!",
         status: 200,
-        user: responseUser
+        responseUser
       })
     } else {
       res.json({
