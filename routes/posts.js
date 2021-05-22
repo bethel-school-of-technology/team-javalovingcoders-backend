@@ -7,7 +7,7 @@ const authService = require("../services/auth");
 
 
 // CREATE a Post // POST Method
-// http://localhost:3001/posts/createPost
+// (Postman) http://localhost:3001/posts/createPost
 router.post('/createPost', async function (req, res, next) {
 
     const user = req.user;
@@ -28,7 +28,7 @@ router.post('/createPost', async function (req, res, next) {
 
 
 // GET All Posts // GET Method
-// http://localhost:3001/posts
+// (Postman) http://localhost:3001/posts
 router.get('/', function (req, res, next) {
     posts.findAll({ include: [{ model: users }] })
         .then(postsFound => {
@@ -41,7 +41,7 @@ router.get('/', function (req, res, next) {
 
 
 // GET A Single POST // GET Method
-// http://localhost:3001/posts/:id
+// (Postman) http://localhost:3001/posts/:PostTitle
 router.get('/:PostTitle', (req, res, next) => {
     const testId = (req.params.PostTitle)
 
@@ -58,7 +58,7 @@ router.get('/:PostTitle', (req, res, next) => {
 
 
 // UPDATE a post // PUT Method
-// http://localhost:3001/posts/:id
+// (Postman) http://localhost:3001/posts/update
 router.put('/update', async function (req, res, next) {
     console.log(req.body)
     const testId = parseInt(req.body.PostId);
@@ -86,7 +86,7 @@ router.put('/update', async function (req, res, next) {
 
 
 // DELETE A Post // DELETE Method
-// http://localhost:3001/posts/:id
+// (Postman) http://localhost:3001/posts/delete
 router.post('/delete', async function (req, res, next) {
 
     console.log(req.body)
@@ -97,7 +97,7 @@ router.post('/delete', async function (req, res, next) {
         return;
     }
 
-    posts.destroy({ where: { PostId: req.body.PostId } })
+    posts.destroy({ where: { PostId: req.body.PostId, UserId: req.user.UserId } })
         .then(() => { res.status(204).send(); })
         .catch(() => { res.status(400).send() });
 });
