@@ -88,7 +88,7 @@ router.post('/login', function (req, res, next) {
     if (!user) {
       console.log('User not found')
       return res.status(401).json({
-        message: "Login Failed"
+        message: "That Username does not exist!"
       });
     } else {
       let passwordMatch = authService.comparePasswords(req.body.password, user.Password);

@@ -85,7 +85,7 @@ router.put('/update', async function (req, res, next) {
 
 
 // DELETE A Post // DELETE Method
-// http://localhost:3001/posts/:id
+// http://localhost:3001/posts/delete
 router.delete('/delete', async function (req, res, next) {
 
     const user = req.user;
@@ -95,7 +95,7 @@ router.delete('/delete', async function (req, res, next) {
         return;
     }
 
-    posts.destroy({ where: { PostId: req.body.PostId } })
+    posts.destroy({ where: { PostId: req.body.id } })
         .then(() => { res.status(204).send(); })
         .catch(() => { res.status(400).send() });
 });
