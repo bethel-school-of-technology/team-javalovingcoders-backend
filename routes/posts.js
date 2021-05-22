@@ -86,8 +86,9 @@ router.put('/update', async function (req, res, next) {
 
 // DELETE A Post // DELETE Method
 // http://localhost:3001/posts/:id
-router.delete('/delete', async function (req, res, next) {
+router.post('/delete', async function (req, res, next) {
 
+    console.log(req.body)
     const user = req.user;
 
     if (!user) {
