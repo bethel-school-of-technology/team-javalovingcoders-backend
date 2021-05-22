@@ -43,7 +43,7 @@ router.get('/', function (req, res, next) {
 // GET A Single POST // GET Method
 // http://localhost:3001/posts/:id
 router.get('/:PostTitle', (req, res, next) => {
-    const testId = (req.body.PostTitle)
+    const testId = (req.params.PostTitle)
 
     posts.findOne({
         where: { PostId: testId }
@@ -60,6 +60,7 @@ router.get('/:PostTitle', (req, res, next) => {
 // UPDATE a post // PUT Method
 // http://localhost:3001/posts/:id
 router.put('/update', async function (req, res, next) {
+    console.log(req.body)
     const testId = parseInt(req.body.PostId);
 
     if (!testId || testId <= 0) {
@@ -75,10 +76,10 @@ router.put('/update', async function (req, res, next) {
     }
 
     posts.update({
-        PostTitle: req.body.postTitle,
-        PostBody: req.body.postBody,
-        Category: req.body.category
-    }).then(updatedPost => { res.json(updatedPost); })
+        PostTitle: req.body.PostTitle,
+        PostBody: req.body.PostBody,
+        Category: req.body.Category
+    }, {where:{PostId:testId}}).then(updatedPost => { res.json(updatedPost); })
     .catch(() => { res.status(400).send(); })
 });
 

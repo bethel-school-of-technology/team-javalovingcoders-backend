@@ -75,5 +75,7 @@ models.sequelize.sync().then(function () {
   console.log("DB has Sync'd up")
 });
 
+app.delete("/posts");
+
 
 module.exports = app;
